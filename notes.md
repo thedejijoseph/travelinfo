@@ -35,3 +35,65 @@ Other qualifiers could be specified such as using only a type of terminal, or th
 I want to start out by simply connecting one state to another: only one journey legs. From one random terminal in a state to another.
 
 These terminals have metadata describing what other terminals they connect to.
+
+---
+
+### Database Schema
+
+`states`
+```javascript
+{
+    name: Ondo,
+    state_id: ondo,
+    terminals: [
+        '<terminal_id>',
+        '<terminal_id>'
+    ]
+
+}
+```
+
+`terminals`
+```javascript
+{
+    terminal_id: '<unique_id>',
+    type: 'one of road, air, rail',
+    state: '<state_id>',
+    name: Ondo Garage,
+    location: 'Approximate location: Ondo road, Akure',
+    description: 'Other details',
+    dest_terminals: [
+        '<terminal_id>',
+        '<terminal_id>'
+    ]
+}
+```
+
+### API and Queries
+
+A request of
+
+```
+GET /query?from_state=ondo&to_state=lagos
+```
+
+to get a response of
+
+```javascript
+{
+    from_state: Ondo,
+    to_state: Lagos,
+    from_terminal: {
+        terminal_id: '<terminal_id>',
+        name: 'Terminal name',
+        location: 'Terminal location'
+    },
+    to_terminal: {
+        terminal_id: '<terminal_id>',
+        name: 'Terminal name',
+        location: 'Terminal location'
+    }
+}
+```
+
+**Note!** The API to add/edit is on a different service. So, for testing purposes, I'll just create a script to autofill data, I guess.
