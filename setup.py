@@ -47,7 +47,7 @@ states_in_nigeria = [
     'Taraba',
     'Yobe',
     'Zamfara',
-    'Federal Capital Territory (FCT)'
+    'FCT'
 ]
 terminals = {}
 
@@ -100,7 +100,7 @@ for state in states:
             pass
 
 # dummy data is set up
-# setup a method to write to database
+# setup method to interact with database
 
 load_dotenv()
 MONGO_URI = os.getenv('MONGO_URI')
