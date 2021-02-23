@@ -99,12 +99,17 @@ for state in states:
         else:
             pass
 
+## code above this line is being ignored for now
+## random data does not work well for tests
+
 # dummy data is set up
 # setup method to interact with database
 
 load_dotenv()
-MONGO_URI = os.getenv('MONGO_URI')
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URI)
+DB_URI = os.getenv('DB_URI')
+client = motor.motor_asyncio.AsyncIOMotorClient(DB_URI)
+
+from data import states, terminals
 
 async def write_to_db():
     db = client['travelinfo-staging']
@@ -114,7 +119,7 @@ async def write_to_db():
     print(f'inserted {len(result.inserted_ids)} states into db')
 
     terminals_collections = db['terminals']
-    result = await terminals_collections.insert_many(terminals.values())
+    result = await terminals_collections.insert_many(terminals)
     print(f'inserted {len(result.inserted_ids)} terminals into db')
 
 # as well as clearing database

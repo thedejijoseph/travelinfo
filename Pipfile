@@ -10,6 +10,8 @@ ipython = "*"
 faker = "*"
 motor = "*"
 python-dotenv = "*"
+starlette = "*"
+uvicorn = "*"
 
 [requires]
 python_version = "3.8"
