@@ -55,7 +55,12 @@ states = [
         'terminals': [
             'trm_ondo_garage'
         ]
-    }
+    },
+    {
+        'name': 'Oyo State',
+        'state_id': 'oyo',
+        'terminals': []
+    },
 ]
 
 terminals = [
