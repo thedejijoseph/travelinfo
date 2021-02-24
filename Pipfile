@@ -12,6 +12,7 @@ motor = "*"
 python-dotenv = "*"
 starlette = "*"
 uvicorn = "*"
+dnspython = "*"
 
 [requires]
 python_version = "3.8"
