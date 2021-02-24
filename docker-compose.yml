@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  travelinfo:
+    image: travelinfo
+    build:
+      context: .
+      dockerfile: Dockerfile
