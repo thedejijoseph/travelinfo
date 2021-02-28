@@ -1,22 +1,18 @@
 
-from setup import DB_URI
+import os
+
 from starlette.applications import Starlette
 from starlette.routing import Route
 from starlette.responses import JSONResponse
-from starlette.config import Config
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
+from dotenv import load_dotenv
 
-config = Config('.env')
-DB_URI = config('DB_URI', cast=str)
-DB_NAME = config('DB_NAME', cast=str, default='travelinfo-staging')
 
-DB_CLIENT = AsyncIOMotorClient(DB_URI)
-DB = DB_CLIENT[DB_NAME]
-
-STATES = DB['states']
-TERMINALS = DB['terminals']
+load_dotenv('.env')
+DB_URI = os.getenv('DB_URI')
+DB_NAME = os.getenv('DB_NAME', 'travelinfo-staging')
 
 
 ## helper utilities
@@ -64,11 +60,14 @@ async def root(request):
     return response
 
 async def query(request):
+    motor_client = AsyncIOMotorClient(DB_URI)
+    db = motor_client[DB_NAME]
+
     from_state = request.query_params['from_state']
     to_state = request.query_params['to_state']
 
-    source_state = await STATES.find_one({'state_id': from_state})
-    dest_state = await STATES.find_one({'state_id': to_state})
+    source_state = await db.states.find_one({'state_id': from_state})
+    dest_state = await db.states.find_one({'state_id': to_state})
 
     if not source_state:
         response = await error(
@@ -97,7 +96,7 @@ async def query(request):
     
     # as simple as simple get..
     # fetch all the terminals in source state
-    cursor = TERMINALS.find({'terminal_id': {'$in': source_state['terminals']}})
+    cursor = db.terminals.find({'terminal_id': {'$in': source_state['terminals']}})
     all_terminals = await cursor.to_list(length=24)
 
     for terminal in all_terminals:
@@ -114,12 +113,6 @@ async def query(request):
     response = await success('List of connections', data=connections)
     return response
 
-"""
-alternative implementation
-
-
-
-"""
 
 exception_handlers = {
     500: handle_server_errors,
@@ -134,5 +127,5 @@ routes = [
 app = Starlette(
     debug=False,
     routes=routes,
-    exception_handlers=exception_handlers
+    exception_handlers=exception_handlers,
 )
