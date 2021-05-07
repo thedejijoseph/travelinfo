@@ -7,12 +7,18 @@ from starlette.responses import JSONResponse
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from dotenv import load_dotenv
+from sqlalchemy import exc
+from sqlalchemy.orm import Session
+
+from environs import Env
+
+from models import State, Terminal, engine
 
 
-load_dotenv('.env')
-DB_URI = os.getenv('DB_URI')
-DB_NAME = os.getenv('DB_NAME', 'travelinfo-staging')
+env = Env()
+env.read_env()
+DB_URI = env('DB_URI')
+DB_NAME = env('DB_NAME', 'travelinfo-staging')
 
 
 ## helper utilities
@@ -113,6 +119,47 @@ async def query(request):
     response = await success('List of connections', data=connections)
     return response
 
+async def resolve(request):
+    from_state_id = request.path_params['from_state']
+    dest_state_id = request.query_params['dest_state']
+    
+    with Session(engine) as session:
+        # check from_state id validity
+        try:
+            from_state = session.query(State).where(State.state_id == from_state_id).one()
+            terminals_in_from_state = session.query(Terminal).where(Terminal.state == from_state).all()
+            if not terminals_in_from_state:
+                response = await success(f"We do not, currently, know of any terminal in {from_state.name}.")
+                return response
+        except exc.NoResultFound:
+            errors = [{
+                'message': f'state_id {from_state_id} is invalid'
+            }]
+            response = await error('Invalid State ID', errors=errors, status_code=422)
+            return response
+            # error code 422 cause provided value is syntactically correct, but invalid
+        
+        # check dest_state id validity
+        try:
+            dest_state = session.query(State).where(State.state_id == dest_state_id).one()
+            terminals_in_dest_state = session.query(Terminal).where(Terminal.state == dest_state).all()
+            if not terminals_in_dest_state:
+                response = await success(f"We do not, currently, know of any terminal in {dest_state.name}.")
+                return response
+        except exc.NoResultFound:
+            errors = [{
+                'message': f'state_id {dest_state_id} is invalid'
+            }]
+            response = await error('Invalid State ID', errors=errors, status_code=422)
+            return response
+            # error code 422 cause provided value is syntactically correct, but invalid
+    
+
+
+    response_data = {"echo": from_state_id}
+    response = await success('Echoing', data=response_data)
+    print(from_state_id)
+    return response
 
 exception_handlers = {
     500: handle_server_errors,
@@ -122,6 +169,7 @@ exception_handlers = {
 routes = [
     Route('/', root),
     Route('/query', query),
+    Route('/terminals/{from_state:str}', resolve),
 ]
 
 app = Starlette(

@@ -13,6 +13,9 @@ python-dotenv = "*"
 starlette = "*"
 uvicorn = "*"
 dnspython = "*"
+psycopg2 = "*"
+sqlalchemy = "*"
+environs = "*"
 
 [requires]
 python_version = "3.8"
